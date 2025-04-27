@@ -106,7 +106,18 @@ fn write_internal<W: Write>(
     writer: &mut BufWriter<W>,
     comparator: Option<Box<dyn FnMut(&&dyn MessageView, &&dyn MessageView) -> Ordering>>,
 ) -> Result<(), std::io::Error> {
-    writer.write_all(b"\nmsgid \"\"\n")?;
+    if !catalog.preheader.is_empty() {
+        for line in &catalog.preheader {
+            if line.is_empty() {
+                writer.write_all(b"#\n")?;
+            } else {
+                writer.write_all(b"# ")?;
+                writer.write_all(line.as_bytes())?;
+                writer.write_all(b"\n")?;
+            }
+        }
+    }
+    writer.write_all(b"msgid \"\"\n")?;
     write_field(writer, "msgstr", catalog.metadata.export_for_po().as_str())?;
     writer.write_all(b"\n")?;
 
@@ -185,7 +196,6 @@ pub fn write_sort_by<W: Write>(
 ) -> Result<(), std::io::Error> {
     write_internal(catalog, writer, Some(comparator))
 }
-
 
 /// Writes a catalog to a PO file on disk with a sorting algorithm.
 pub fn write_to_file_sort_by(

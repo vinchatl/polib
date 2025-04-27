@@ -189,6 +189,9 @@ impl POParserState {
         let mut po_message = std::mem::take(&mut self.current_message);
         if !self.metadata_parsed {
             if po_message.msgid.is_empty() && !po_message.msgstr.is_empty() {
+                for line in po_message.translator_comments.split("\n") {
+                    self.catalog.preheader.push(line.to_string());
+                }
                 let unescaped = unescape(&po_message.msgstr)?;
                 self.catalog.metadata = CatalogMetadata::parse(&unescaped)?;
                 self.metadata_parsed = true;
