@@ -119,8 +119,15 @@ fn write_internal<W: Write>(
     };
 
     for message in messages {
-        if !message.comments().is_empty() {
-            for line in message.comments().split('\n') {
+        if !message.translator_comments().is_empty() {
+            for line in message.translator_comments().split('\n') {
+                writer.write_all(b"# ")?;
+                writer.write_all(line.as_bytes())?;
+                writer.write_all(b"\n")?;
+            }
+        }
+        if !message.extracted_comments().is_empty() {
+            for line in message.extracted_comments().split('\n') {
                 writer.write_all(b"#. ")?;
                 writer.write_all(line.as_bytes())?;
                 writer.write_all(b"\n")?;
